@@ -1,0 +1,36 @@
+name: Pipeline CI para aplicação em Go
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Setando a versão do Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+      
+    - name: Buildando a imagem do banco
+      run: docker-compose build
+      
+    - name: Criando o banco
+      run: docker-compose up -d
+
+    - name: Testando a aplicação
+      run: go test -v main_test.go
+      
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Buildando a aplicação
+      run: go build -v main.go
